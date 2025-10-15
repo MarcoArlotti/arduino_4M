@@ -1,0 +1,91 @@
+#include "thingProperties.h"
+#include <ArduinoRS485.h>
+
+String receivedData = "";
+unsigned long lastCloudUpdate = 0;
+const unsigned long cloudInterval = 250;
+bool isUpdatingCloud = true;
+
+void setup() {
+  Serial.begin(115200);
+  RS485.begin(115200);
+  pinMode(LED_USER, OUTPUT);
+  digitalWrite(LED_USER, LOW);
+ 
+  initProperties();
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+}
+
+void loop() {
+  if (isUpdatingCloud) {
+    if (millis() - lastCloudUpdate >= cloudInterval) {
+      ArduinoCloud.update();
+      lastCloudUpdate = millis();
+      isUpdatingCloud = false;
+    }
+  } else {
+    processRS485();
+  }
+}
+
+void processRS485() {
+  RS485.receive();
+ 
+  if (RS485.available()) {
+    digitalWrite(LED_USER, HIGH);
+    receivedData = RS485.readStringUntil('\n');
+   
+    Serial.print("Dati ricevuti: ");
+    Serial.println(receivedData);
+
+    if (receivedData.startsWith("&")) {
+      receivedData.remove(0, 1); // Rimuove '&'
+
+      if (contaCampi(receivedData, ';') == 5) {
+        estraiDati(receivedData);
+
+        Serial.println("Dati Estratti:");
+        Serial.print("Temperatura: "); Serial.println(TEMP);
+        Serial.print("Umidita: "); Serial.println(HUMIDITY);
+        Serial.print("Luminosita: "); Serial.println(LUMIN);
+        Serial.print("Direzione: "); Serial.println(DIREZIONE ? "Avanti" : "Indietro");
+        Serial.print("Angolo: "); Serial.println(ANGOLO);
+       
+        isUpdatingCloud = true;
+      } else {
+        Serial.println("Errore: numero di campi errato");
+      }
+    } else {
+      Serial.println("Errore: carattere speciale '&' non trovato");
+    }
+
+    digitalWrite(LED_USER, LOW);
+  }
+}
+
+void estraiDati(String data) {
+  int indice = 0;
+  char *token = strtok(const_cast<char*>(data.c_str()), ";");
+
+  while (token != NULL && indice < 5) {
+    switch (indice) {
+      case 0: TEMP = atof(token); break;
+      case 1: HUMIDITY = atof(token); break;
+      case 2: LUMIN = atof(token); break;
+      case 3: DIREZIONE = (atoi(token) == 1); break;
+      case 4: ANGOLO = atof(token); break;
+    }
+    token = strtok(NULL, ";");
+    indice++;
+  }
+}
+
+int contaCampi(String data, char separatore) {
+  int count = 0;
+  for (size_t i = 0; i < data.length(); i++) {
+    if (data[i] == separatore) {
+      count++;
+    }
+  }
+  return count + 1;
+}
