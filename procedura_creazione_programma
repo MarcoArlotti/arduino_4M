@@ -1,0 +1,22 @@
+1) cercare arduino cloud : https://cloud.arduino.cc/
+2) registrarsi
+3) andare su Iot Cloud ( puntini sulla destra in alto )
+4) i progetti si chiamano Things , si parte da Devices, fare "Aggiungi device"
+    scegliamo Arduino device,
+5) non collegare ancora l' Opta, il programma cerca il dispositivo che non trova e dice che non trova Arduino Create Agent, quindi lo fa scaricare; scaricare l' Agent ed installarlo
+6) ritornare nella Dashboard, collegare l' Opta con il cavetto USB ed il cavo ethernet per chi non ha il Wifi
+7) ci vuole tempo prima che si connetti, provare con Try Again....
+8) quando ha trovato il dispositivo compare Opta found, cliccare su configura
+9) dare un nome al dispositivo, scegliere la connessione wifi o ethernet, se wifi inserire il seed, aspettare che si configuri, dopo premere su Done
+10) Andare sulla parte Things, create Thing (cioe' creare un progetto), sceglire il nome del progetto, selezionare un dispositivo, scegliamo il nostro Opta, poi associate.
+11) add variable: led, tipo basic boolean, read only, onchange 
+12) add led_rw, tipo basic boolean, read & write, onchange
+13) andare su sketch, troviamo le 2 variabili led e led_rw 
+14) scrivere: pinMode(BTN_USER); pinMode(LED_D0, OUTPUT);
+15) La funzione onLedRwChange() viene chiamata ogni volta che la variabile led_rw viene modifica dall' Iot Cloud, usiamo questa funzione per accendere/spegnere il LED_D0: digitalWrite(LED_D0, OUTPUT);
+16) nel loop: if(!digitalRead(BTN_USER) ) { led =!led; }
+17) lo sketch viene compilato online e scaricato su Opta tramite l' Agent
+18) se fa fatica a compilare e scaricare il programma puo' essere necessario premere il pulsante di reset sull' Opta (nel forellino)
+19) passare alla sezione Dashboard: Build Dashboard, dare un nome alla Dashboard; siamo in edit: inserire uno switch, sulla destra collegarlo ad una variabile, lo colleghiamo a led_rw (link, poi done); aggiungiamo un altro elemento: LED, lo colleghiamo alla variabile led
+10) mettere la dashboard in modalita' run (sulla destra,simbolo occhio)
+11) testare premendo lo USER_BUTTON sull' Opta e premere lo switch sulla Dasboard
